@@ -1,28 +1,21 @@
 #include <stdio.h>
-#include <string.h>
-#define SIZE 100
-
-struct SV
-{
-    char hoTen[30];
-    char MSSV [10];
-    float t,l,h;
-    float dTB;
-};
+#include <stdlib.h>
+#include <time.h>
+#define SIZE 1000
 
 struct Node
 {
-    SV data;
+    int data;
     Node *next;
 };
 
-typedef Node *List;
+typedef Node* List;
 
-void nhap (List &L, SV A[]);
-void nhap1SV (SV &x);
-void addTail (List &L, SV x);
-Node *createNode (SV x);
-void xuat (List L);
+void nhapMang (List &L);
+int random (int minN, int maxN);
+void addTail (List &L, int x);
+Node *createNode (int x);
+void xuatMang (List L);
 void mergeSort (List &L);
 void tach (List L, List &L1, List &L2);
 Node *getMid (List L);
@@ -30,39 +23,31 @@ Node *merge (List L1, List L2);
 
 int main()
 {
-    SV A[SIZE];
     List L;
     L = NULL;
-    nhap(L,A);
-    xuat(L);
+    nhapMang(L);
     mergeSort(L);
-    Node *p;
-    printf ("\nList sau khi sap xep la: ");
-    for (p=L; p->next != NULL; p = p->next)
-    {
-        printf ("%s -> ", p->data.hoTen);
-    }
-    printf ("%s", p->data.hoTen);
+    printf ("List sau khi sap xep la:\n");
+    xuatMang(L);
     return 0;
 }
 
 Node *merge (List L1, List L2)
 {
+    List L = NULL;
     if (!L1)
         return L2;
-    else
-        if (!L2)
-            return L1;
-    List L = NULL;
-    if (strcmp(L1->data.hoTen,L2->data.hoTen) < 0)
-    {
-        L = L1;
-        L->next = merge(L1->next,L2);
-    }
-    else
+    else if (!L2)
+        return L1;
+    if (L1->data < L2->data)
     {
         L = L2;
         L->next = merge(L1,L2->next);
+    }
+    else
+    {
+        L = L1;
+        L->next = merge(L1->next,L2);
     }
     return L;
 }
@@ -70,11 +55,11 @@ Node *merge (List L1, List L2)
 Node *getMid (List L)
 {
     Node *p, *q;
-    p=q=L;
+    p = q = L;
     while (q->next && q->next->next)
     {
-        p = p->next;
         q = q->next->next;
+        p = p->next;
     }
     return p;
 }
@@ -89,70 +74,66 @@ void tach (List L, List &L1, List &L2)
 
 void mergeSort (List &L)
 {
-    List L1=NULL, L2=NULL;
-    if(!L || !L->next)
+    List L1,L2;
+    L1 = L2 = NULL;
+    if (!L || !L->next)
         return;
     tach(L,L1,L2);
     mergeSort(L1);
     mergeSort(L2);
-    L = merge(L1,L2);
+    L = merge (L1,L2);
 }
 
-void xuat (List L)
+void xuatMang (List L)
 {
     Node *p;
-    printf ("List ban dau la: ");
-    for (p=L; p->next != NULL; p = p->next)
-    {
-        printf ("%s -> ", p->data.hoTen);
-    }
-    printf ("%s", p->data.hoTen);
+    for (p = L; p != NULL; p = p->next)
+        printf ("%d ", p->data);
 }
 
-Node *createNode (SV x)
+Node *createNode (int x)
 {
-    Node *p = new Node;
+    Node *p = new Node();
     p->data = x;
     p->next = NULL;
     return p;
 }
 
-void addTail (List &L, SV x)
+void addTail (List &L, int x)
 {
     Node *p = createNode(x);
     if (!L)
         L = p;
     else
     {
-       Node *r = L;
-       while (r->next)
-            r = r->next;
-       r->next = p;
+        Node *q = L;
+        while (q->next)
+            q = q->next;
+        q->next = p;
     }
 }
 
-void nhap1SV (SV &x)
+int random (int minN, int maxN)
 {
-    fflush(stdin);
-    gets(x.hoTen);
-    gets(x.MSSV);
-    float t,l,h;
-    scanf ("%f%f%f", &t, &l, &h);
-    x.t = t;
-    x.l = l;
-    x.h = h;
-    x.dTB = (t+l+h)/3;
+    return minN + rand() % (maxN + 1 - minN);
 }
 
-void nhap (List &L, SV A[])
+void nhapMang (List &L)
 {
-    int n;
-    printf ("Nhap so phan tu cua List: ");
-    scanf ("%d", &n);
-    for (int i=0; i<n; i++)
+    FILE *fo;
+    fo = fopen("SoNgauNhien.txt", "wt");
+    int A[SIZE];
+    srand((int)time(0));
+    for (int i=0; i<1000; i++)
     {
-        printf ("Nhap thong tin cho sinh vien %d: ", i+1);
-        nhap1SV(A[i]);
-        addTail(L,A[i]);
+        A[i] = random(1,1000);
+        addTail(L, A[i]);
+        if (i != 0 && i % 50 == 0)
+            fprintf(fo, "\n");
+        else
+            fprintf (fo, "%d ", A[i]);
+        i++;
     }
+    fclose(fo);
 }
+
